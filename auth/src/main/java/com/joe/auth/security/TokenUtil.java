@@ -25,6 +25,13 @@ public class TokenUtil {
                 .compact();
     }
 
+    public String getUsername(String token) {
+        Claims claims = Jwts.parser().setSigningKey(TOKEN_SECRET)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getSubject();
+    }
+
     private Date generateExpirationDate() {
         return new Date(System.currentTimeMillis() + VALID_PERIOD * 1000);
     }

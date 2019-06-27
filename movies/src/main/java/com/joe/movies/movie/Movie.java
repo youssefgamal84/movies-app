@@ -1,22 +1,27 @@
 package com.joe.movies.movie;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.joe.movies.genre.Genre;
+import org.hibernate.validator.internal.IgnoreForbiddenApisErrors;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "movie")
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"},ignoreUnknown = true)
 public class Movie {
 
     @Id
     @Column(name="id")
     private int id;
 
-    @Column(name = "id",nullable = false)
+    @Column(name = "title",nullable = false)
     private String title;
 
     @Column(name = "rate")
@@ -28,7 +33,18 @@ public class Movie {
     @Column(name="release_date")
     private Date releaseDate;
 
+    @Transient
+    private List<Integer> genres;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "movie_genre",
+    joinColumns = {@JoinColumn(name="movie_id")},
+    inverseJoinColumns = {@JoinColumn(name="genre_id")})
+    private List<Genre> genreObjects;
+
+
     public Movie() {
+        this.genres=new ArrayList<>();
     }
 
     public Movie(int id, String title, double rate, int numberOfVotes, Date releaseDate) {
@@ -37,8 +53,26 @@ public class Movie {
         this.rate = rate;
         this.numberOfVotes = numberOfVotes;
         this.releaseDate = releaseDate;
+        this.genres=new ArrayList<>();
     }
 
+    @JsonIgnore
+    public List<Integer> getGenres() {
+        return genres;
+    }
+
+    @JsonSetter(value = "genre_ids")
+    public void setGenres(List<Integer> genres) {
+        this.genres = genres;
+    }
+
+    public List<Genre> getGenreObjects() {
+        return genreObjects;
+    }
+
+    public void setGenreObjects(List<Genre> genreObjects) {
+        this.genreObjects = genreObjects;
+    }
 
     public int getId() {
         return id;
